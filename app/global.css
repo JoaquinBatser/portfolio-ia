@@ -1,3 +1,15 @@
-@import 'tailwindcss';
-@import 'fumadocs-ui/css/neutral.css';
-@import 'fumadocs-ui/css/preset.css';
+@import "tailwindcss";
+@import "fumadocs-ui/css/neutral.css";
+@import "fumadocs-ui/css/preset.css";
+
+pre code {
+  white-space: pre-wrap;
+  font-family: "Geist mono", "IBM Plex Mono", monospace;
+  font-size: 14px;
+}
+
+code {
+  white-space: pre-wrap;
+  font-family: "Geist mono", "IBM Plex Mono", monospace;
+  font-size: 14px;
+}
