@@ -8,7 +8,7 @@ export default function Layout({ children }: LayoutProps<"/docs">) {
       tree={source.pageTree}
       {...baseOptions()}
       nav={{
-        title: "Your Docs Title",
+        title: "Ingenieria de Datos",
       }}
     >
       {children}
