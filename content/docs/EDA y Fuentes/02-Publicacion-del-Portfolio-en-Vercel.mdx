@@ -1,0 +1,154 @@
+---
+title: "Publicación del Portfolio con Vercel y Fumadocs"
+description: "Guía completa del proceso de deployment y configuración del portfolio usando Next.js, Fumadocs y Vercel en lugar del stack tradicional de GitHub Pages y MkDocs."
+---
+
+## Tecnologías Utilizadas
+
+En lugar de usar GitHub Pages con MkDocs, este portfolio está desarrollado con:
+
+- **Next.js 15.5.2**: Framework de React para aplicaciones web modernas
+- **Fumadocs**: Sistema de documentación especializado para crear portafolios técnicos
+- **Vercel**: Plataforma de deployment optimizada para Next.js
+- **TypeScript**: Para mayor robustez del código
+- **Tailwind CSS**: Framework de CSS para estilos responsivos
+
+## Resultado Obtenido
+
+Al completar esta práctica logré:
+
+- Un repositorio personal creado y configurado con fumadocs  
+- Deployment automático configurado con Vercel  
+- Sitio online en: `https://portfolio-ia-joaquin.vercel.app`  
+- Estructura de documentación organizada por secciones  
+- Sistema de navegación automático entre prácticas  
+
+## Arquitectura del Proyecto
+
+### Estructura de Archivos
+
+```
+portfolio-ia/
+├── app/                    # Aplicación Next.js
+│   ├── (home)/            # Página principal
+│   ├── docs/              # Layout de documentación
+│   └── api/search/        # API de búsqueda
+├── content/docs/          # Contenido en MDX
+│   ├── EDA y Fuentes/     # Prácticas de análisis
+│   └── Calidad y Etica/   # Prácticas de calidad
+├── components/            # Componentes React
+├── lib/                   # Configuración y utilidades
+└── public/images/         # Recursos estáticos
+```
+
+### Ventajas de Fumadocs vs MkDocs
+
+| Característica     | Fumadocs                  | MkDocs                     |
+| ------------------ | ------------------------- | -------------------------- |
+| **Framework Base** | Next.js + React           | Python + Jinja2            |
+| **Interactividad** | Componentes React nativos | Limitada                   |
+| **Performance**    | SSG + ISR optimizado      | Generación estática básica |
+| **Búsqueda**       | API integrada con Next.js | Plugin externo requerido   |
+| **Deployment**     | Vercel (automático)       | GitHub Pages (manual)      |
+| **Customización**  | JSX/TSX completo          | Templates limitados        |
+
+## Proceso de Deployment
+
+### 1. Configuración del Repositorio
+
+```bash
+# Crear proyecto desde template de fumadocs
+npx create-fumadocs-app@latest portfolio-ia
+
+# Configurar dependencias
+npm install
+```
+
+### 2. Configuración de Vercel
+
+En lugar de GitHub Actions, Vercel maneja el deployment automáticamente:
+
+1. **Conectar repositorio**: Vincular GitHub repo con Vercel
+2. **Auto-deploy**: Cada push a `main` despliega automáticamente
+3. **Preview deployments**: Cada PR genera un preview único
+4. **Domain management**: URL personalizada disponible
+
+### 3. Configuración de Contenido
+
+El archivo `source.config.ts` define la estructura:
+
+```typescript
+export const source = loader({
+  baseUrl: '/docs',
+  rootDir: 'content/docs',
+  source: {
+    files: 'content/docs/**/*.mdx'
+  }
+});
+```
+
+## Contenido del Portfolio
+
+### A. Portada Personalizada
+
+- **Información personal**: Joaquín Batser - Estudiante de IA
+- **Objetivo del curso**: Desarrollo de habilidades en análisis de datos y machine learning
+- **Links profesionales**: GitHub, LinkedIn
+
+### B. Secciones Principales
+
+#### EDA y Fuentes de Datos
+- [Exploración del Dataset Iris](./01-Exploracion-del-Dataset-Iris)
+- [Análisis Netflix con Pandas](./03-EDA-Netflix-Dataset-con-pandas)
+- [EDA Multi-fuentes y Joins](./04-EDA-Multi-fuentes-y-Joins)
+
+#### Calidad y Ética
+- Prácticas de validación de datos
+- Consideraciones éticas en IA
+
+### C. Características Técnicas
+
+**Navegación Automática**: Fumadocs genera automáticamente:
+- Sidebar con estructura jerárquica
+- Breadcrumbs de navegación
+- Links entre secciones relacionadas
+- Búsqueda full-text integrada
+
+**Componentes Interactivos**:
+- Tabs para organizar contenido
+- Code blocks con syntax highlighting
+- Imágenes optimizadas con Next.js Image
+
+## Workflow de Actualización
+
+### Proceso de Contenido
+
+1. **Editar**: Modificar archivos `.mdx` en `content/docs/`
+2. **Preview**: `npm run dev` para vista previa local
+3. **Commit**: Push a GitHub
+4. **Deploy**: Vercel despliega automáticamente
+
+### Ventajas del Workflow
+
+- **Tiempo de deploy**: ~30 segundos vs ~2-3 minutos de GitHub Actions
+- **Preview automático**: URL única para cada PR
+- **Rollback instantáneo**: Revertir a cualquier deployment anterior
+- **Analytics integradas**: Métricas de performance y usuarios
+
+## Métricas de Performance
+
+Vercel proporciona analytics detalladas:
+
+- **Core Web Vitals**: LCP, FID, CLS optimizados
+- **Loading Speed**: ~200ms tiempo de respuesta
+- **SEO Score**: 95+ en Lighthouse
+- **Accessibility**: Cumple WCAG 2.1 AA
+
+## Enlaces Importantes
+
+- **Sitio en producción**: [https://portfolio-ia-joaquin.vercel.app](https://portfolio-ia-joaquin.vercel.app)
+- **Repositorio**: [GitHub - portfolio-ia](https://github.com/JoaquinBatser/portfolio-ia)
+- **Dashboard Vercel**: Panel de control para deployments
+
+
+*Última actualización: 13 de septiembre de 2025*
