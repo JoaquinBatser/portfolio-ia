@@ -1,0 +1,22 @@
+EXTRA PRÁCTICA 10: RESULTADOS
+============================================================
+
+Comparación de Reducción Dimensional:
+
+PCA:
+  explained_variance: 0.7237806900789896
+  n_components: 2
+  r2: 0.07671096205163952
+  mse: 12626144511.720802
+
+t-SNE:
+  applied: True
+  n_samples: 500
+
+UMAP:
+  applied: False
+
+Original:
+  r2: 0.8238639588970023
+  mse: 2408692205.0223985
+

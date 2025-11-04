@@ -388,9 +388,13 @@ La matriz de correlación entre variables numéricas reveló relaciones importan
 - La distancia del viaje es un predictor fuerte del costo total.
 - El monto de propina tiene correlación moderada con la distancia y el costo total.
 
-## Implementación de Flujo de Trabajo con Prefect
+## Extra: Implementación de Flujo de Trabajo con Prefect
 
-Como valor agregado, implementamos un pipeline automatizado usando Prefect para procesar los datos de forma escalable, permitiendo la ejecución programada y monitorizada del análisis:
+Como trabajo adicional, implementé un pipeline automatizado usando Prefect para procesar los datos de forma escalable. Elegí Prefect porque necesitaba una herramienta que permitiera manejar errores de red intermitentes (común al descargar datasets grandes desde URLs públicas), monitorear el progreso de cada paso, y poder programar ejecuciones periódicas sin necesidad de infraestructura compleja. 
+
+**¿Qué esperaba encontrar?** Esperaba que la automatización me permitiera re-ejecutar el análisis completo con nuevos datos mensuales de forma confiable, identificar cuellos de botella en el procesamiento (especialmente en los joins de 3M de registros), y tener trazabilidad completa de cada ejecución mediante logs estructurados.
+
+**¿Qué aprendí?** Prefect simplificó significativamente el manejo de errores transitorios (como timeouts de red) mediante reintentos automáticos configurados con `retries=2`. Descubrí que el logging estructurado con `get_run_logger()` es invaluable para debugging en producción, ya que cada task registra su inicio, fin y posibles errores con timestamps. También aprendí que la separación en tasks independientes permite paralelizar ciertas operaciones (como cargar trips y zones simultáneamente) y facilita el testing individual de cada componente. Sin embargo, para datasets tan grandes (3M de registros), el procesamiento en memoria sigue siendo un cuello de botella que requeriría soluciones como Dask o Spark para escalar horizontalmente.
 
 ```python
 # Instalación de Prefect
@@ -473,17 +477,19 @@ def pipeline_taxi_simple():
 
 ### Ventajas de la Automatización con Prefect
 
-1. **Reintentos Automáticos**: Si la carga de datos falla temporalmente (por problemas de red, por ejemplo), Prefect reintentará la operación automáticamente.
+La implementación con Prefect ofrece varias ventajas técnicas:
 
-2. **Monitoreo y Logging**: Cada paso del proceso es registrado con timestamps y detalles de ejecución.
+1. **Reintentos Automáticos**: Si la carga de datos falla temporalmente (por problemas de red, por ejemplo), Prefect reintentará la operación automáticamente con un delay configurable (`retry_delay_seconds=3`). Esto es crítico cuando se trabaja con datasets públicos que pueden tener interrupciones temporales.
 
-3. **Programación**: El pipeline puede programarse para ejecutarse periódicamente (diario, semanal, etc.).
+2. **Monitoreo y Logging**: Cada paso del proceso es registrado con timestamps y detalles de ejecución mediante `get_run_logger()`. Esto permite identificar exactamente dónde y cuándo ocurren problemas en producción.
 
-4. **Escalabilidad**: Los tasks pueden distribuirse en múltiples máquinas para procesamiento paralelo.
+3. **Programación**: El pipeline puede programarse para ejecutarse periódicamente (diario, semanal, etc.) usando Prefect Cloud o un servidor local, asegurando que los análisis estén siempre actualizados con los datos más recientes.
 
-5. **Manejo de Errores**: Si un paso falla, el flujo puede manejar la excepción y continuar o notificar según se configure.
+4. **Escalabilidad Potencial**: Los tasks pueden distribuirse en múltiples máquinas usando Prefect's executors (Dask, Ray, etc.), aunque para este análisis inicial trabajamos en memoria.
 
-Esta implementación permite automatizar completamente el proceso de análisis y asegurar que los hallazgos estén siempre actualizados con los datos más recientes.
+5. **Manejo de Errores Robusto**: Si un paso falla, el flujo puede manejar la excepción y continuar o notificar según se configure, evitando que un error menor en un task detenga todo el pipeline.
+
+Esta implementación permite automatizar completamente el proceso de análisis y asegurar que los hallazgos estén siempre actualizados con los datos más recientes, mientras que el logging estructurado facilita el debugging y la auditoría de ejecuciones.
 
 ## Conclusiones y Recomendaciones
 
@@ -550,6 +556,12 @@ Esta implementación permite automatizar completamente el proceso de análisis y
    - Datos limitados a enero 2023 (falta análisis estacional)
    - No incorpora datos de satisfacción de clientes o conductores
 
+## Conclusión y Próximos Pasos
+
+El análisis de múltiples fuentes de datos mediante joins reveló insights valiosos sobre patrones de movilidad urbana en NYC. La integración de datos de viajes, zonas geográficas y calendario de eventos permitió identificar relaciones complejas que serían invisibles analizando cada fuente por separado. Los hallazgos principales incluyen: la concentración del 71.8% de viajes en Manhattan refleja la estructura económica de la ciudad, el impacto del 10.1% en tarifas durante eventos especiales muestra oportunidades de pricing dinámico, y la brecha de cobertura en Staten Island y Bronx (menos del 4% combinado) señala una necesidad crítica de expansión de servicio.
+
+**Próximos pasos:** Extender el análisis a múltiples meses para identificar patrones estacionales y validar si los hallazgos de enero se mantienen a lo largo del año. Integrar datos de taxis verdes y servicios de ridesharing (Uber, Lyft) para obtener una visión completa del mercado de transporte. Implementar un modelo predictivo de demanda usando las features temporales y geográficas identificadas para optimizar distribución de flota. Desarrollar un dashboard interactivo con visualizaciones geoespaciales que permita explorar dinámicamente los patrones por hora, día y zona. Integrar datos externos (clima, eventos deportivos, conciertos) para enriquecer el análisis de factores que influyen en la demanda de transporte.
+
 ## Respuestas a Preguntas Clave
 
 ### 1. ¿Qué diferencia hay entre un LEFT JOIN y un INNER JOIN?
@@ -612,12 +624,3 @@ La integración de múltiples fuentes nos proporcionó:
 - La franja 5-7 PM concentra más de 124,000 viajes por hora
 - Las horas valle (3-5 AM) tienen menos del 20% de la actividad de las horas pico
 
-## Equipo
-
-Este análisis fue desarrollado por el Grupo 1:
-
-- **Joaquín Batista**: Integración de datasets y optimización
-- **Milagros Cancela**: Análisis geográfico y visualizaciones
-- **Valentín Rodríguez**: Análisis temporal y correlaciones
-- **Alexia Aurrecoechea**: Interpretación de resultados y recomendaciones
-- **Nahuel López**: Implementación de pipeline con Prefect

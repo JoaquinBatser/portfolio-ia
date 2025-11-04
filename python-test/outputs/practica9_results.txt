@@ -1,0 +1,13 @@
+EXTRA PRÁCTICA 9: RESULTADOS
+============================================================
+
+Comparación de Encodings:
+
+                        accuracy       auc
+RF + Target Encoding    0.843527  0.892811
+RF + CatBoost Encoding  0.845516  0.892605
+GB + Target Encoding    0.856456  0.912877
+GB + CatBoost Encoding  0.856456  0.912877
+
+Mejor combinación (Accuracy): GB + Target Encoding
+Mejor combinación (AUC): GB + Target Encoding

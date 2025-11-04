@@ -1,0 +1,32 @@
+EXTRA PRÁCTICA 8: RESULTADOS
+============================================================
+
+Mejora con features derivadas:
+  R²: 0.8923 → 0.9533 (+6.84%)
+  MSE: 7.9015 → 3.4264 (+56.64%)
+
+Top 10 Features (Random Forest):
+         feature  importance
+  price_per_room    0.932950
+              RM    0.025070
+           sq_rm    0.021376
+      sqrt_lstat    0.003624
+               B    0.002964
+           LSTAT    0.002757
+crime_per_capita    0.001593
+     lstat_x_age    0.001458
+        rm_x_age    0.001282
+distance_per_age    0.001234
+
+Top 10 Features (Mutual Information):
+         feature  importance
+  price_per_room    1.709654
+      sqrt_lstat    0.671636
+           LSTAT    0.667819
+              RM    0.509024
+     lstat_x_age    0.500180
+           sq_rm    0.496477
+         PTRATIO    0.481389
+           INDUS    0.480823
+             NOX    0.437829
+nox_per_industry    0.436681

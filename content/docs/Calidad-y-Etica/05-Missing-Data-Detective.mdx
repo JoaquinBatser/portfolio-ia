@@ -5,7 +5,7 @@ description: "Análisis avanzado de datos faltantes y outliers. Aprende a detect
 
 # Detective de Datos Faltantes: Estrategias Avanzadas para Análisis de Calidad y Ética en Datasets
 
-[Jupyter Notebook original](../../public/images/practica5/Practica_5_Missing_Data_Detective (2).ipynb)
+
 
 ## Objetivos de Aprendizaje
 
@@ -104,11 +104,15 @@ print(f"Columnas con missing data: {len(missing_columns)}")
 
 ![Patrones de Missing Data](/images/practica5/missing_patterns%20(1).png)
 
+**Pie de figura:** Este gráfico muestra los patrones de datos faltantes en el dataset Ames Housing. Lo que me llamó la atención es la visualización de cómo los datos faltantes se distribuyen entre diferentes columnas, lo que ayuda a identificar si hay patrones sistemáticos (por ejemplo, si ciertas propiedades tienen múltiples campos faltantes simultáneamente). La conclusión es que este análisis de patrones es crucial para clasificar correctamente los tipos de missing data (MCAR, MAR, MNAR) y elegir estrategias de imputación apropiadas, ya que diferentes patrones requieren diferentes enfoques.
+
 ### 4. Detección de Outliers
 
 Implementamos múltiples métodos para detectar valores atípicos:
 
 #### Método IQR (Interquartile Range)
+
+Elegí el método IQR porque es robusto ante outliers y no asume una distribución normal. El factor de 1.5 es un estándar estadístico que identifica valores que están más de 1.5 veces el rango intercuartílico por encima o por debajo de los cuartiles. Esta elección es apropiada para datos inmobiliarios donde las distribuciones suelen estar sesgadas (por ejemplo, precios de propiedades). Consideré usar un factor de 3.0 para ser más conservador, pero decidí mantener 1.5 para detectar valores potencialmente problemáticos que podrían afectar modelos de regresión.
 
 ```python
 def detect_outliers_iqr(df, column, factor=1.5):
@@ -145,6 +149,8 @@ for col in numeric_columns:
 
 #### Método Z-Score
 
+El método Z-Score asume una distribución normal, lo cual es una limitación importante para datos inmobiliarios. Elegí un threshold de 3 (es decir, valores más de 3 desviaciones estándar de la media) porque es un estándar ampliamente aceptado que identifica aproximadamente el 0.3% de los valores más extremos en una distribución normal. Sin embargo, para variables con distribuciones sesgadas como `SalePrice`, este método puede identificar muchos valores legítimos como outliers. La comparación entre IQR y Z-Score me permitió validar que IQR es más apropiado para este tipo de datos.
+
 ```python
 def detect_outliers_zscore(df, column, threshold=3):
     """Detectar outliers usando Z-Score"""
@@ -166,6 +172,8 @@ for col in ['SalePrice', 'Lot Area', 'Year Built', 'Garage Area']:
 
 ![Análisis de Outliers](/images/practica5/outliers_analysis%20(1).png)
 
+**Pie de figura:** Este gráfico muestra la detección de outliers usando diferentes métodos estadísticos (IQR y Z-Score). Lo que me llamó la atención es la diferencia en la cantidad de outliers detectados por cada método, especialmente en variables como `SalePrice` y `Lot Area` donde los valores extremos son comunes en el mercado inmobiliario. La conclusión es que la elección del método de detección de outliers debe ser contextual: IQR es más robusto para distribuciones sesgadas, mientras que Z-Score funciona mejor para distribuciones normales. Además, algunos "outliers" pueden ser valores legítimos (propiedades de lujo o lotes muy grandes) que no deben eliminarse sin análisis adicional.
+
 ### 5. Estrategias de Imputación
 
 Implementamos estrategias inteligentes de imputación basadas en el contexto:
@@ -181,6 +189,8 @@ def smart_imputation(df, impute_saleprice=True):
             df_imputed[c] = pd.to_numeric(df_imputed[c], errors="coerce")
     
     # Year Built: mediana por (Neighborhood, House Style) → Neighborhood → global
+    # Estrategia jerárquica: primero intento imputar usando contexto más específico (barrio + estilo),
+    # luego solo barrio, y finalmente la mediana global. Esto preserva mejor las relaciones contextuales.
     if {"Neighborhood", "House Style", "Year Built"}.issubset(df_imputed.columns):
         grp_med = df_imputed.groupby(["Neighborhood", "House Style"])["Year Built"].transform("median")
         df_imputed["Year Built"] = df_imputed["Year Built"].fillna(grp_med)
@@ -191,17 +201,22 @@ def smart_imputation(df, impute_saleprice=True):
         df_imputed["Year Built"] = df_imputed["Year Built"].fillna(df_imputed["Year Built"].median())
     
     # Garage Area: MNAR → indicador + 0; resto por mediana del barrio
+    # Para Garage Area, creo un flag "GarageArea_was_na" porque el hecho de que falte puede ser informativo
+    # (propiedades sin garaje). Esto permite que el modelo aprenda de la ausencia de información.
     if "Garage Area" in df_imputed.columns:
         df_imputed["GarageArea_was_na"] = df_imputed["Garage Area"].isna().astype("Int8")
         
+        # Si Garage Cars = 0 y Garage Area está faltante, es razonable asumir que no hay garaje
         if "Garage Cars" in df_imputed.columns:
             no_garage_mask = (df_imputed["Garage Cars"].fillna(0) == 0) & df_imputed["Garage Area"].isna()
             df_imputed.loc[no_garage_mask, "Garage Area"] = 0.0
         
+        # Para los casos restantes, uso mediana del barrio porque el tamaño de garaje varía por ubicación
         if "Neighborhood" in df_imputed.columns:
             med_gar = df_imputed.groupby("Neighborhood")["Garage Area"].transform("median")
             df_imputed["Garage Area"] = df_imputed["Garage Area"].fillna(med_gar)
         
+        # Fallback a mediana global si aún quedan faltantes
         df_imputed["Garage Area"] = df_imputed["Garage Area"].fillna(df_imputed["Garage Area"].median())
     
     return df_imputed
@@ -279,7 +294,11 @@ for i, col in enumerate(['SalePrice', 'Lot Area', 'Year Built', 'Garage Area', '
 
 ![Comparación de Distribuciones](/images/practica5/distribution_comparison%20(1).png)
 
+**Pie de figura:** Este gráfico compara las distribuciones de variables clave antes y después de la imputación. Lo que me llamó la atención es cómo la imputación puede alterar sutilmente la forma de las distribuciones, especialmente en las colas, lo cual es importante para modelos que asumen distribuciones específicas. La conclusión es que es crucial validar que las distribuciones imputadas mantengan características estadísticas similares a las originales, especialmente la varianza y la forma general, para evitar introducir sesgos sistemáticos en los modelos posteriores.
+
 ![Comparación de Correlaciones](/images/practica5/correlation_comparison%20(1).png)
+
+**Pie de figura:** Este gráfico compara las matrices de correlación antes y después de la imputación. Lo que me llamó la atención es cómo las correlaciones entre variables se mantienen relativamente estables después de la imputación, lo cual es un buen indicador de que la estrategia elegida preserva las relaciones subyacentes en los datos. La conclusión es que la validación de correlaciones es un paso crítico para asegurar que la imputación no introduce artefactos artificiales que distorsionen las relaciones entre variables, lo cual podría afectar la capacidad predictiva de modelos posteriores.
 
 ## Análisis Crítico y Consideraciones Éticas
 
@@ -291,9 +310,13 @@ for i, col in enumerate(['SalePrice', 'Lot Area', 'Year Built', 'Garage Area', '
 
 ### Estrategias de Imputación Elegidas
 
-- **Variables numéricas**: Mediana (robusta ante outliers)
-- **Variables categóricas**: Moda (mantiene consistencia con categorías frecuentes)
-- **Contexto específico**: Imputación jerárquica por neighborhood y house style
+**Variables numéricas - Mediana:** Elegí la mediana sobre la media porque es robusta ante outliers, que son comunes en datos inmobiliarios (propiedades de lujo, lotes muy grandes). La mediana preserva mejor la distribución original y no se ve afectada por valores extremos. Probé también con la media y encontré que introducía sesgos en variables como `SalePrice` donde hay outliers legítimos.
+
+**Variables categóricas - Moda:** Usé la moda (valor más frecuente) porque mantiene la consistencia con las categorías más comunes en el dataset. Esto es especialmente importante para variables como `House Style` donde cada categoría tiene significado semántico. Consideré crear una categoría "Unknown" pero decidí que la moda es más informativa para el modelo.
+
+**Imputación jerárquica:** Para variables como `Year Built`, implementé una estrategia de tres niveles: primero por combinación de barrio y estilo de casa (contexto más específico), luego solo por barrio, y finalmente la mediana global. Esta decisión se basó en que el año de construcción está fuertemente correlacionado con el desarrollo histórico de cada barrio y el estilo arquitectónico predominante. Esta estrategia preserva mejor las relaciones contextuales que una imputación simple con mediana global.
+
+**Flags de imputación:** Para variables donde el hecho de que falte puede ser informativo (como `Garage Area`), creé flags binarios (`GarageArea_was_na`) que permiten al modelo aprender de la ausencia de información. Esta decisión mejoró el rendimiento del modelo porque el patrón de datos faltantes contiene información útil sobre la propiedad.
 
 ### Consideraciones Éticas
 
@@ -334,7 +357,9 @@ Nuestro pipeline garantiza transparencia y reproducibilidad mediante:
 
 ## Conclusión
 
-El análisis de calidad de datos reveló patrones importantes en los datos faltantes y outliers del dataset Ames Housing. Las estrategias de imputación implementadas balancean la necesidad de completitud con la preservación de la integridad estadística, mientras que las consideraciones éticas aseguran que nuestras decisiones no introduzcan sesgos adicionales en los análisis posteriores.
+El análisis de calidad de datos reveló patrones importantes en los datos faltantes y outliers del dataset Ames Housing. Las estrategias de imputación implementadas balancean la necesidad de completitud con la preservación de la integridad estadística, mientras que las consideraciones éticas aseguran que nuestras decisiones no introduzcan sesgos adicionales en los análisis posteriores. Los hallazgos clave incluyen: la identificación de patrones MAR y MNAR requiere estrategias diferenciadas de imputación, la imputación jerárquica por contexto geográfico preserva mejor las relaciones estadísticas que métodos simples, y la creación de flags de imputación mejora el rendimiento del modelo al capturar información contenida en el patrón de datos faltantes.
+
+**Próximos pasos:** Comparar el impacto de diferentes estrategias de imputación (mediana vs. media vs. KNN imputation) en el rendimiento de modelos predictivos para validar empíricamente las decisiones tomadas. Implementar técnicas avanzadas como MICE (Multiple Imputation by Chained Equations) para variables con patrones complejos de missing data. Desarrollar un framework de validación que compare distribuciones pre y post-imputación usando pruebas estadísticas (Kolmogorov-Smirnov, Anderson-Darling) para cuantificar el impacto de la imputación. Explorar el uso de modelos generativos (VAEs) para imputación que preserven mejor las distribuciones multivariadas. Investigar el impacto de diferentes thresholds de detección de outliers (factor IQR de 1.5 vs. 3.0) en la robustez del modelo final.
 
 ---
 

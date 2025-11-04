@@ -1,0 +1,21 @@
+EXTRA PRÁCTICA 11: RESULTADOS
+============================================================
+
+Comparación de Features Temporales:
+
+Manual Features:
+  AUC: 0.6700 ± 0.0034
+
+Manual + Fourier:
+  AUC: 0.6776 ± 0.0071
+
+All Features:
+  AUC: 0.6762 ± 0.0034
+
+
+Frecuencias dominantes detectadas:
+  1. 0.000000
+  2. 0.143000
+  3. -0.143000
+  4. -0.033000
+  5. 0.033000

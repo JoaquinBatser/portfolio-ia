@@ -3,7 +3,6 @@ title: "Detectando y corrigiendo sesgo algorítmico: Fairlearn aplicado a casos 
 description: "Análisis completo de sesgo en modelos de machine learning usando Fairlearn. Casos de estudio: Boston Housing (sesgo racial) y Titanic (sesgo de género/clase)."
 ---
 
-[Jupyter Notebook original](../../public/images/practica7/Aurrecochea-Práctica7.ipynb)
 
 ## Objetivos de Aprendizaje
 
@@ -147,6 +146,8 @@ plt.show()
 
 ![Análisis de Sesgo por Grupo Racial](/images/practica7/boxplot.png)
 
+**Pie de figura:** Este gráfico muestra la distribución de precios de vivienda (MEDV) por grupo racial en el dataset Boston Housing. Lo que me llamó la atención es la marcada diferencia en las medianas de precio entre grupos: las áreas con mayor proporción de población afroamericana tienen precios significativamente menores, lo cual refleja discriminación histórica en el mercado inmobiliario. La conclusión es que este sesgo no es un artefacto estadístico sino una realidad histórica que está codificada en los datos, y usar estos datos sin reconocer este sesgo perpetuaría y amplificaría la discriminación en modelos de machine learning.
+
 ### 3. Cuantificar Sesgo en Predicciones
 
 ```python
@@ -165,6 +166,10 @@ lr_model.fit(X_train, y_train)
 y_pred = lr_model.predict(X_test)
 
 # Análisis de equidad usando Fairlearn
+# Elegí MetricFrame porque permite evaluar métricas de rendimiento (MSE, R²) desagregadas por grupos
+# sensibles, lo cual es crucial para identificar sesgos. MSE mide el error promedio de predicción,
+# mientras que R² mide la proporción de varianza explicada. Ambas son importantes: MSE para entender
+# el impacto absoluto del error, R² para entender si el modelo es igualmente útil para todos los grupos.
 metric_frame = MetricFrame(
     metrics={'mse': mean_squared_error, 'r2': r2_score},
     y_true=y_test,
@@ -303,6 +308,14 @@ print("📈 Métricas del modelo base por género:")
 print(metric_frame_titanic.by_group)
 
 # Calcular métricas de equidad específicas
+# Demographic Parity: mide si la tasa de predicción positiva (clasificar como sobreviviente) es igual
+# entre grupos. Un valor cercano a 0 indica equidad, mientras que valores alejados indican sesgo.
+# Elegí esta métrica porque es importante en contextos donde queremos igualdad de oportunidades
+# independientemente del grupo protegido.
+
+# Equalized Odds: más estricta que Demographic Parity, requiere que tanto TPR (True Positive Rate)
+# como FPR (False Positive Rate) sean iguales entre grupos. Esto es más apropiado cuando queremos
+# que el modelo sea igualmente preciso para todos los grupos, no solo que prediga igual proporción.
 demo_parity_diff = demographic_parity_difference(
     y_test_t, y_pred_t, sensitive_features=sens_test_t
 )
@@ -319,6 +332,13 @@ print(f"Diferencia en Igualdad de Oportunidades: {eq_odds_diff:.3f}")
 
 ```python
 # Aplicar corrección de sesgo
+# Elegí DemographicParity como constraint porque queremos que el modelo prediga supervivencia con
+# igual probabilidad para ambos géneros, independientemente de la precisión. Esto es apropiado para
+# el contexto del Titanic donde queremos evitar sesgo de género en las predicciones.
+
+# ExponentiatedGradient es un algoritmo de optimización que busca el mejor trade-off entre
+# precisión y equidad. Reduje n_estimators a 50 (de 100) para acelerar el entrenamiento del
+# mitigador, ya que ExponentiatedGradient requiere múltiples iteraciones del modelo base.
 constraint = DemographicParity()
 mitigator = ExponentiatedGradient(
     estimator=RandomForestClassifier(n_estimators=50, random_state=42),
@@ -445,8 +465,8 @@ plt.show()
 
 ## Conclusión
 
-La detección y corrección de sesgo algorítmico requiere un enfoque multifacético que combine análisis técnico riguroso con consideraciones éticas profundas. Los casos de Boston Housing y Titanic demuestran que no existe una solución única: algunas situaciones requieren solo detección y transparencia, mientras que otras permiten corrección automática. La clave está en desarrollar criterios claros para cada contexto y mantener la supervisión humana en decisiones críticas.
+La detección y corrección de sesgo algorítmico requiere un enfoque multifacético que combine análisis técnico riguroso con consideraciones éticas profundas. Los casos de Boston Housing y Titanic demuestran que no existe una solución única: algunas situaciones requieren solo detección y transparencia, mientras que otras permiten corrección automática. La clave está en desarrollar criterios claros para cada contexto y mantener la supervisión humana en decisiones críticas. Los hallazgos clave incluyen: la detección de sesgo requiere métricas específicas (Demographic Parity, Equalized Odds) que van más allá de métricas agregadas como accuracy, la corrección automática con Fairlearn puede reducir pero no eliminar completamente el sesgo, y la decisión de detectar vs. corregir debe basarse en consideraciones éticas y legales, no solo técnicas.
 
-El uso de herramientas como Fairlearn facilita la implementación técnica, pero la responsabilidad ética de deployment responsable recae en los equipos de data science y las organizaciones que implementan estos sistemas.
+**Próximos pasos:** Explorar otras métricas de equidad como Calibration (que el modelo sea igualmente confiable para todos los grupos) y Individual Fairness (tratamiento similar para individuos similares) para tener una visión más completa del sesgo. Implementar análisis de sesgo interseccional que considere múltiples características protegidas simultáneamente (género + raza + clase social) para identificar formas complejas de discriminación. Desarrollar un framework de auditoría continua que monitoree métricas de equidad en producción y alerte cuando se detecten desviaciones. Investigar métodos de mitigación de sesgo que preserven mejor la utilidad del modelo mientras maximizan la equidad, como técnicas de aprendizaje adversario o reweighting adaptativo. Integrar consideraciones de equidad desde el diseño inicial del modelo en lugar de intentar corregir sesgos después del entrenamiento.
 
 ---
