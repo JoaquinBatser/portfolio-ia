@@ -416,11 +416,10 @@ plt.axis('off')
 - **ORB** para aplicaciones en tiempo real
 - **SIFT** cuando se necesita máxima robustez
 
-## Conclusiones
+## Conclusión
 
-- Análisis médico (radiografías, resonancias)
-- Control de calidad industrial
-- Fotogrametría y reconstrucción 3D
+El preprocesamiento de imágenes con OpenCV permite extraer información valiosa de datos visuales mediante técnicas de detección de bordes, segmentación y reconocimiento de patrones. Las transformaciones de espacios de color (RGB, HSV, Lab) facilitan tareas específicas como segmentación por color y análisis perceptual. La mejora de contraste mediante CLAHE adaptativo preserva detalles locales mejor que la ecualización global. Los detectores de características (Harris, Shi-Tomasi, ORB, SIFT) y sus descriptores son fundamentales para aplicaciones de matching, tracking y reconocimiento de objetos en visión por computadora.
 
-**Pipeline típico:**
-1. Carga → 2. Conversión de color → 3. Mejora de contraste → 4. Suavizado → 5. Detección de features → 6. Extracción de descriptores → 7. Matching/Clasificación
+**Próximos pasos:** Implementar detección de objetos con YOLO o Faster R-CNN para aplicaciones en tiempo real. Explorar técnicas de deep learning con CNNs (Convolutional Neural Networks) para clasificación y segmentación semántica de imágenes. Aplicar técnicas de aumento de datos (data augmentation) para mejorar robustez de modelos de visión. Investigar métodos de super-resolución para mejorar calidad de imágenes de baja resolución. Desarrollar pipelines de procesamiento de video para análisis de secuencias temporales y detección de movimiento.
+
+---

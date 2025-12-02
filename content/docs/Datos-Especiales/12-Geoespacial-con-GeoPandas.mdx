@@ -130,7 +130,7 @@ print(radios_m[['BARRIO', 'area_m2', 'densidad_hab_km2']].head())
 **Resultados:**
 - Áreas correctamente calculadas en m²
 - Densidad poblacional muestra **alta variabilidad** entre radios
-- Algunos radios tienen densidad \u003e 30,000 hab/km²
+- Algunos radios tienen densidad > 30,000 hab/km²
 
 ### 4. Visualización Básica
 
@@ -314,21 +314,6 @@ print(sample_radios[['RADIO_ID', 'h3_hexagons']].head())
 
 **Decisión:** Mostrar **múltiples niveles** de agregación según el análisis específico.
 
-## Conclusiones
-
-El análisis geoespacial con GeoPandas permite:
-1. **Gestionar datos geográficos** con la misma facilidad que pandas
-2. **Realizar cálculos espaciales** precisos con manejo correcto de CRS
-3. **Combinar datos** de diferentes fuentes usando joins espaciales
-4. **Crear visualizaciones informativas** que comunican patrones espaciales
-5. **Escalar análisis** usando grillas hexagonales para grandes volúmenes de datos
-
-**Aplicaciones prácticas:**
-- Planificación urbana y análisis demográfico
-- Estudios de mercado y ubicación de negocios
-- Análisis de cobertura de servicios públicos
-- Estudios ambientales y de movilidad
-
 ## Extra: Mapas Interactivos con Folium
 
 Aunque GeoPandas es excelente para visualizaciones estáticas, a veces necesitamos mapas interactivos para explorar datos con mayor detalle. **Folium** es una librería de Python que facilita la creación de mapas interactivos basados en Leaflet.js.
@@ -374,3 +359,10 @@ m
 
 **Pie de figura:** Esta imagen es una representación estática de lo que sería el mapa interactivo. En la versión HTML real, podrías hacer zoom para ver calles específicas y hacer clic en cada marcador para ver la categoría y otros datos del punto. Los mapas de calor (heatmap) son especialmente útiles para identificar "zonas calientes" de actividad o densidad poblacional sin saturar el mapa con miles de puntos individuales.
 
+## Conclusión
+
+El análisis geoespacial con GeoPandas permite trabajar con datos geográficos con la misma facilidad que pandas, realizando cálculos espaciales precisos mediante el manejo correcto de CRS. Los joins espaciales facilitan la combinación de datos de diferentes fuentes basándose en relaciones geométricas, mientras que las visualizaciones coropléticas y mapas interactivos comunican efectivamente patrones espaciales complejos. Las grillas hexagonales (H3) ofrecen una solución escalable para análisis de grandes volúmenes de datos geoespaciales, manteniendo uniformidad y eficiencia computacional.
+
+**Próximos pasos:** Implementar análisis de autocorrelación espacial (Moran's I) para detectar clustering de variables demográficas. Explorar técnicas de interpolación espacial (Kriging, IDW) para estimar valores en áreas sin datos. Integrar datos temporales para análisis espacio-temporales de evolución urbana. Aplicar machine learning espacial para predicción de variables demográficas en áreas no censadas. Desarrollar dashboards interactivos con Plotly Dash o Streamlit que permitan exploración dinámica de múltiples variables geoespaciales simultáneamente.
+
+---

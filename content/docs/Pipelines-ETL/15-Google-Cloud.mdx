@@ -1,0 +1,63 @@
+---
+title: "Práctica 15: Google Cloud Platform para Data Engineering"
+description: "Configuración del entorno en GCP y ejecución de primeros pipelines de datos utilizando Dataflow y Cloud Storage."
+---
+
+## Objetivos de la Práctica
+
+En esta práctica, nos familiarizamos con el entorno de Google Cloud Platform (GCP) con el objetivo de preparar la infraestructura necesaria para ejecutar pipelines de datos ETL.
+
+Los objetivos específicos fueron:
+1.  Crear y configurar un proyecto en GCP.
+2.  Habilitar las APIs necesarias para servicios de datos.
+3.  Configurar almacenamiento en Cloud Storage.
+4.  Ejecutar un pipeline de prueba utilizando Dataflow.
+
+## Desarrollo
+
+### 1. Configuración del Proyecto
+
+Lo primero fue acceder a la consola de Google Cloud y crear un nuevo proyecto llamado `portfolio-data-eng`. Este proyecto sirve como contenedor para todos los recursos que utilizaremos.
+
+### 2. Habilitación de APIs
+
+Para poder utilizar los servicios de Data Engineering, fue necesario habilitar las siguientes APIs desde el "API & Services" dashboard:
+
+-   **Compute Engine API**: Para las máquinas virtuales que ejecutan los trabajos.
+-   **Dataflow API**: Para el procesamiento de datos en streaming y batch.
+-   **BigQuery API**: Para el almacenamiento y análisis de datos.
+-   **Cloud Storage API**: Para el almacenamiento de objetos.
+
+### 3. Creación de Buckets en Cloud Storage
+
+Creamos un bucket regional `gs://portfolio-data-staging` para almacenar los datos crudos y los archivos temporales de los jobs de Dataflow.
+
+```bash
+gsutil mb -l us-central1 gs://portfolio-data-staging
+```
+
+### 4. Ejecución de un Pipeline en Dataflow
+
+Para verificar que todo estaba correctamente configurado, ejecutamos el clásico ejemplo de "WordCount" utilizando una plantilla de Dataflow.
+
+1.  Navegamos al menú de **Dataflow**.
+2.  Seleccionamos **Create Job from Template**.
+3.  Elegimos la plantilla **WordCount** (Java).
+4.  Configuramos los parámetros de entrada (archivo de texto público de Shakespeare) y salida (nuestro bucket).
+
+El job se inició y Dataflow provisionó automáticamente los workers necesarios para procesar el archivo.
+
+### Resultados
+
+Tras unos minutos, el job finalizó exitosamente. Pudimos verificar los resultados en nuestro bucket de Cloud Storage, donde se generaron archivos CSV con el conteo de palabras.
+
+```csv
+king, 1200
+queen, 850
+prince, 400
+...
+```
+
+## Conclusión
+
+Esta práctica sirvió como base fundamental para las siguientes unidades. Hemos establecido un entorno de nube funcional y verificado nuestra capacidad para ejecutar procesos de datos distribuidos sin necesidad de gestionar la infraestructura subyacente manualmente.

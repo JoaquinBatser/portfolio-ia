@@ -733,3 +733,11 @@ Estas transformaciones permiten que el modelo aprenda que una palabra dicha ráp
 - Dataset GTZAN (clasificación de géneros)
 - LibriSpeech (reconocimiento de voz)
 - ESC-50 (clasificación de sonidos ambientales)
+
+## Conclusión
+
+El procesamiento de audio con librerías como Librosa permite extraer características temporales y espectrales fundamentales para análisis de señales sonoras. Las transformadas de Fourier (FFT, STFT) revelan la composición frecuencial del audio, mientras que los espectrogramas y mel-espectrogramas proporcionan representaciones visuales útiles para machine learning. Los MFCCs (Mel-Frequency Cepstral Coefficients) son features robustas ampliamente utilizadas en reconocimiento de voz y clasificación de audio, capturando información espectral compacta y discriminativa. Las técnicas de aumento de datos (pitch shifting, time stretching, adición de ruido) mejoran significativamente la generalización de modelos de audio al simular variaciones naturales en las señales.
+
+**Próximos pasos:** Implementar clasificación de audio con redes neuronales convolucionales (CNNs) sobre espectrogramas para aprovechar patrones espaciales. Explorar arquitecturas especializadas como WaveNet o Tacotron para síntesis de voz de alta calidad. Aplicar técnicas de separación de fuentes (source separation) para aislar instrumentos o voces en mezclas de audio complejas. Investigar modelos de atención (attention mechanisms) y transformers para tareas de speech-to-text y audio captioning. Desarrollar sistemas de detección de eventos sonoros para aplicaciones de monitoreo ambiental, seguridad o análisis de salud mediante sonidos corporales.
+
+---
